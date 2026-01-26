@@ -1,0 +1,19 @@
+type: web
+name: unified-app
+env: node
+region: oregon
+build:
+  dockerfilePath: ''
+  buildCommand: 'npm install'
+startCommand: 'npm start'
+environment:
+  - key: SUPABASE_URL
+  - key: SUPABASE_SERVICE_ROLE_KEY
+  - key: WEBHOOK_SECRET
+  - key: NINA_CHAT_BEARER_TOKEN
+  - key: IG_BEARER_TOKEN
+  - key: OF_BEARER_TOKEN
+  - key: FANSLY_BEARER_TOKEN
+  - key: FANVUE_BEARER_TOKEN
+  - key: FB_BEARER_TOKEN
+  - key: ADMIN_API_KEY
