@@ -17,6 +17,7 @@
   <header>Nina Agency – dashboard</header>
 
   <main>
+    
     <section>
       <div class="panel">
         <h3>Stav agentury</h3>
@@ -25,6 +26,7 @@
 
       <div class="panel">
         <h3>Logy / statistiky</h3>
+        <p id="supabaseStatus">Supabase: čekám…</p>
         <p>Zatím placeholder. Jakmile dáš anon key, ukážu ti reálný data.</p>
       </div>
     </section>
@@ -52,31 +54,35 @@
 </div>
     </section>
   </main>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   const SUPABASE_URL = "https://wygplsbeugmxlvtkvcdt.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_yvuK08HK61Qz1aG2S0LDeQ_kCZ8XCR3";
 
-  const supabase = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-  );
+  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  async function loadStats() {
-    const { data, error } = await supabase
-      .from("users")
-      .select("*")
-      .limit(5);
+  async function checkSupabase() {
+    const el = document.getElementById("supabaseStatus");
+    if (!el) return;
 
-    if (error) {
-      console.error("Supabase error:", error);
-      return;
+    el.textContent = "Supabase: načítám…";
+
+    try {
+      // nejlehčí dotaz: vezmeme jen 1 řádek
+      const { data, error } = await client.from("users").select("id").limit(1);
+
+      if (error) {
+        el.textContent = "Supabase chyba: " + (error.message || JSON.stringify(error));
+        return;
+      }
+
+      el.textContent = "Supabase OK ✅ (users řádek: " + (data?.length ?? 0) + ")";
+    } catch (e) {
+      el.textContent = "Supabase crash: " + (e?.message || String(e));
     }
-
-    console.log("USERS:", data);
   }
 
-  loadStats();
+  checkSupabase();
 </script>
 </body>
 </html>
