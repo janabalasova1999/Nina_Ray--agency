@@ -52,5 +52,31 @@
 </div>
     </section>
   </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://wygplsbeugmxlvtkvcdt.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_yvuK08HK61Qz1aG2S0LDeQ_kCZ8XCR3";
+
+  const supabase = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+  async function loadStats() {
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .limit(5);
+
+    if (error) {
+      console.error("Supabase error:", error);
+      return;
+    }
+
+    console.log("USERS:", data);
+  }
+
+  loadStats();
+</script>
 </body>
 </html>
