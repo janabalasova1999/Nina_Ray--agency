@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nina – Dashboard</title>
+  <style>
+    body { font-family: -apple-system, system-ui, sans-serif; margin: 0; background:#0b0f17; color:#e8eefc; }
+    header { padding: 14px; background:#0f1626; border-bottom:1px solid #22304f; }
+    main { padding: 14px; }
+    .card { background:#0f1626; border:1px solid #22304f; border-radius:12px; padding:12px; margin-bottom:10px; }
+    .meta { font-size:12px; opacity:.8; margin-bottom:6px; }
+  </style>
+</head>
+<body>
+  <header>
+    <strong>Nina Agency</strong><br>
+    <small>Messages dashboard</small>
+  </header>
+
+  <main>
+    <div id="messages">Načítám…</div>
+  </main>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    const supabase = createClient(
+      "https://wygplsbeugmxlvtkvcdt.supabase.co/",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind5Z3Bsc2JldWdteGx2dGt2Y2R0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxMzE5MjUsImV4cCI6MjA4NDcwNzkyNX0.EFKPqsXRjhhC9tjBBK2cxABj3YJq5zCUhj6JsZLsPIc"
+    );
+
+    const box = document.getElementById("messages");
+
+    async function load() {
+      const { data, error } = await supabase
+        .from("messages")
+        .select("platform, direction, content, created_at")
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      if (error) {
+        box.innerText = error.message;
+        return;
+      }
+
+      box.innerHTML = "";
+      data.forEach(m => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <div class="meta">${m.created_at} • ${m.platform} • ${m.direction}</div>
+          <div>${m.content}</div>
+        `;
+        box.appendChild(div);
+      });
+    }
+
+    load();
+  </script>
+</body>
+</html>
