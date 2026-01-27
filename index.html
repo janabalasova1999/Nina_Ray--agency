@@ -27,6 +27,8 @@
       <div class="panel">
         <h3>Logy / statistiky</h3>
         <p id="supabaseStatus">Supabase: čekám…</p>
+        <p><strong>Počet zpráv:</strong> <span id="msgCount">načítám…</span></p>
+<div id="lastMessages"></div>
         <p>Zatím placeholder. Jakmile dáš anon key, ukážu ti reálný data.</p>
       </div>
     </section>
@@ -56,34 +58,44 @@
   </main>
  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
   const SUPABASE_URL = "https://wygplsbeugmxlvtkvcdt.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_yvuK08HK61Qz1aG2S0LDeQ_kCZ8XCR3";
   const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  async function check(table) {
-    const { data, error } = await client.from(table).select("id", { count: "exact" }).limit(1);
-    if (error) return { table, ok: false, msg: error.message };
-    return { table, ok: true, countGuess: (data?.length ?? 0) };
+  async function loadMessages() {
+    const statusEl = document.getElementById("supabaseStatus");
+    const countEl = document.getElementById("msgCount");
+    const listEl = document.getElementById("lastMessages");
+
+    statusEl.textContent = "Supabase: načítám messages…";
+
+    const { data, error, count } = await client
+      .from("messages")
+      .select("*", { count: "exact" })
+      .order("created_at", { ascending: false })
+      .limit(5);
+
+    if (error) {
+      statusEl.textContent = "Supabase chyba: " + error.message;
+      countEl.textContent = "—";
+      listEl.textContent = "";
+      return;
+    }
+
+    statusEl.textContent = "Supabase OK ✅";
+    countEl.textContent = (count ?? data.length);
+
+    listEl.innerHTML = data.map(m => `
+      <div style="background:#161a22;border-radius:6px;padding:8px;margin-bottom:6px;font-size:14px">
+        <div style="opacity:.7">${m.created_at ?? ""} ${m.platform ?? ""}</div>
+        <div>${(m.content ?? m.message ?? JSON.stringify(m))}</div>
+      </div>
+    `).join("");
   }
 
-  async function run() {
-    const el = document.getElementById("supabaseStatus");
-    if (!el) return;
-    el.textContent = "Supabase: skenuju tabulky…";
-
-    const tables = ["users", "messages", "events", "recommendations"];
-    const results = [];
-    for (const t of tables) results.push(await check(t));
-
-    const lines = results.map(r =>
-      r.ok ? `✅ ${r.table} (aspoň 1 řádek? ${r.countGuess})` : `❌ ${r.table}: ${r.msg}`
-    );
-
-    el.textContent = "Supabase scan:\n" + lines.join("\n");
-    el.style.whiteSpace = "pre-line";
-  }
-
-  run();
+  loadMessages();
 </script>
 </body>
 </html>
